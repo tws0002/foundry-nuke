@@ -1,0 +1,151 @@
+set cut_paste_input [stack 0]
+version 10.0 v6
+push $cut_paste_input
+Group {
+name grainAlphaEdge
+tile_color 0xff00ff
+note_font "Bitstream Vera Sans Bold Bold Bold Bold Bold Bold Bold"
+selected true
+xpos -1185
+ypos -543
+addUserKnob {20 controls l Controls}
+addUserKnob {7 blur_size l "blur size" R 0 100}
+blur_size 71.5
+addUserKnob {7 noise_size l "noise size" R 0 50}
+noise_size 21.2
+addUserKnob {7 dilate l "edge dilate" R -0.99 5}
+dilate -0.5
+addUserKnob {7 contrast_edge l contrast R 0 3}
+contrast_edge 1
+addUserKnob {26 ""}
+addUserKnob {7 post_blur l "post blur" R 0 100}
+addUserKnob {6 add_rgb l "Apply to rgba" +STARTLINE}
+add_rgb true
+addUserKnob {20 noise_settings l "Noise settings"}
+addUserKnob {7 animate_noise l animate R 0 5}
+addUserKnob {41 translate T Noise1.translate}
+addUserKnob {26 ""}
+addUserKnob {7 lacunarity_noise l lacunarity R 1 10}
+lacunarity_noise 2.26
+addUserKnob {7 gain_noise l gain R 0.1 1}
+gain_noise 0.5
+addUserKnob {7 gamma_noise l gamma}
+gamma_noise 0.5
+}
+Input {
+inputs 0
+name mask
+xpos -426
+ypos 229
+}
+Dot {
+name Dot4
+xpos -392
+ypos 279
+}
+set Nf3baf160 [stack 0]
+Dot {
+name Dot5
+xpos -502
+ypos 279
+}
+Remove {
+name Remove2
+xpos -536
+ypos 370
+}
+Noise {
+output alpha
+cliptype none
+size {{noise_size}}
+zoffset {{animate_noise}}
+lacunarity {{lacunarity_noise}}
+gain {{gain_noise}}
+gamma {{gamma_noise}}
+center {{width/2 x1 0 x76 0} {height/2 x1 0 x76 0}}
+name Noise1
+xpos -536
+ypos 420
+}
+Clamp {
+name Clamp3
+xpos -536
+ypos 467
+}
+push $Nf3baf160
+Remove {
+channels rgb
+name RemoveRGB1
+xpos -426
+ypos 373
+}
+Blur {
+channels alpha
+size {{blur_size}}
+name Blur1
+xpos -426
+ypos 415
+}
+Gamma {
+channels alpha
+value {0 0 0 {dilate+1}}
+name Gamma1
+xpos -426
+ypos 478
+}
+set Nd5cb0c80 [stack 0]
+ChannelMerge {
+inputs 2
+operation from
+name ChannelMerge1
+xpos -536
+ypos 518
+}
+push $Nd5cb0c80
+ChannelMerge {
+inputs 2
+operation plus
+name ChannelMerge2
+xpos -426
+ypos 555
+}
+RolloffContrast {
+channels alpha
+contrast {{contrast_edge}}
+slope_mag_low1 0.8000000119
+black_low 1
+slope_mag_high2 0.8000000119
+white_high 1
+name RolloffContrast2
+selected true
+xpos -426
+ypos 600
+}
+Clamp {
+name Clamp4
+xpos -426
+ypos 655
+}
+Blur {
+channels alpha
+size {{post_blur}}
+name Blur2
+xpos -426
+ypos 706
+}
+Shuffle {
+red alpha
+green alpha
+blue alpha
+name Shuffle1
+xpos -426
+ypos 770
+disable {{add_rgb-1}}
+}
+Output {
+name Output1
+xpos -426
+ypos 826
+}
+end_group
+​

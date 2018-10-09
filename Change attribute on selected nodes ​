@@ -1,0 +1,11 @@
+set cut_paste_input [stack 0]
+version 10.0 v6
+push $cut_paste_input
+NoOp {
+name MB_SETTINGS
+selected true
+xpos -2141
+ypos 4017
+addUserKnob {20 User}
+addUserKnob {22 asdfasdf l "Set MB to render only on farm" T "for node in nuke.selectedNodes():\n node\[\"motionblur\"].setExpression(\"!\$gui\")" +STARTLINE}
+}

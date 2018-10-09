@@ -1,3 +1,13 @@
 
 One sided texture:
 Merge mat - A över Fillmat
+
+Motion vector settings
+Settings for Nuke Vectorblur using MV2D toxic vector pass:
+uv channels: Choose your motion vector channels here.
+add: u -0.5 , v -0.5  To center vector information around 0
+multiply: Adjust the amount of motionblur
+offset: Adjust the shutter offset
+method: forward
+alpha:Choose rgba alpha 
+​

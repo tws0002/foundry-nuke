@@ -1,0 +1,146 @@
+menu.py Templates
+#Import stuff
+import nuke
+import rendercameraDot
+import rendercameraDotChild
+import AnimationMaker, alignNodes
+#import W_hotbox, W_hotboxManager
+##
+#Define stuff
+#
+def reloadRead(x):
+    for i in x:
+if i.Class() == 'Read':
+            nuke.Script_Knob.execute(i.knob('reload'))
+#
+def setLabel():
+    
+    '''Quick edit the label for the selected node'''
+    noted = 0
+    try:
+        sn = nuke.selectedNodes()[-1]
+        snLabel = sn['label'].value()
+        snName = sn.name()
+    except:
+        sn = None
+        return
+    
+    p = nuke.Panel( 'Edit Label' )
+    p.setTitle( 'Edit label for %s' % snName )
+    p.setWidth( 350 )
+    p.addNotepad('Label', snLabel)
+    result = p.show()
+    
+    if result:
+        label = p.value('Label')
+        try:
+            sn['label'].setValue(label)
+    sn['note_font_size'].setValue(15)
+    sn['note_font_color'].setValue(1509949439)
+    noted = 1
+        except:
+            return
+    snf = nuke.selectedNodes()
+    for i in snf:
+        i['label'].setValue(label)
+        i['note_font_size'].setValue(15)
+        i['note_font_color'].setValue(1509949439)
+#
+def framestep(default=0):
+    nuke.activeViewer().frameControl(default)
+#
+def zoomLabel(x):
+    for x in x:   
+        x['note_font_size'].setValue(x['note_font_size'].getValue() + 10)
+def unZoomLabel(x):
+    for x in x:
+        x['note_font_size'].setValue(x['note_font_size'].getValue() - 10)
+#
+def getScreenSize(node,axis):
+    if axis == 'x':
+        return node.screenWidth()/2
+    else:
+        return node.screenHeight()/2
+#
+def distributeEvenly(axis):
+    '''
+    Equalize the amount of space between selected nodes.
+    '''
+    selection = nuke.selectedNodes()
+    allPositionsDict = {}
+    for node in selection:
+        position = float(node.knob(axis+'pos').value() + getScreenSize(node,axis))
+        if position in allPositionsDict.keys():
+            allPositionsDict[position].append(node)
+        else:
+            allPositionsDict[position] = [node]
+    allPositions = sorted(allPositionsDict.keys())
+    amount = len(allPositions)
+    if amount < 3:
+        return
+    minPos = allPositions[0]
+    maxPos = allPositions[-1]
+    stepSize = (maxPos - minPos) / (amount -1)
+    undo = nuke.Undo()
+    undo.name("Distribute evenly")
+    undo.begin()
+    for index, i in enumerate(allPositions):
+        newPos = minPos + index * stepSize
+        for node in allPositionsDict[i]:
+            node.knob(axis+'pos').setValue( newPos- getScreenSize(node,axis))
+    undo.end()
+    
+        
+###
+#Add Hotkeys
+m=nuke.menu('Nuke')
+n=m.addMenu('User')
+v=nuke.menu('Viewer')
+v.addCommand("Step forward", 'framestep(1)', 'f2')
+v.addCommand("Step backward", 'framestep(-1)','f1')
+n.addCommand("Step forward", 'framestep(1)', 'f2')
+n.addCommand("Step backward", 'framestep(-1)','f1')
+n.addCommand('misc/rendercameradot', 'rendercameraDot.motherDot()', '')
+n.addCommand('misc/rendercamerachild', 'rendercameraDotChild.childDot()', 'Alt+8')
+n.addCommand( 'setLabel', "setLabel()", 'shift+d')
+n.addCommand( 'zoomLabel', "zoomLabel(nuke.selectedNodes())", 'ctrl+shift+a')
+n.addCommand( 'unZoomLabel', "unZoomLabel(nuke.selectedNodes())", 'ctrl+shift+alt+a')
+n.addCommand( 'reloadRead', "reloadRead(nuke.selectedNodes())", 'shift+t')
+#
+n.addCommand('Edit/Node/Align/horizontally', 'alignNodes.alignNodes( nuke.selectedNodes(), direction="x" )', 'alt+d')
+n.addCommand('Edit/Node/Align/vertically', 'alignNodes.alignNodes( nuke.selectedNodes(), direction="y" )', 'alt+x')
+n.addCommand('Edit/Node/Align/evenlyHorizontally', 'distributeEvenly("x")', 'alt+shift+x')
+n.addCommand('Edit/Node/Align/evenlyVertically', 'distributeEvenly("y")', 'alt+shift+d')
+n.addCommand('Edit/Node/W_scaleTree', 'W_scaleTree.scaleTreeFloatingPanel()', 'alt+z')
+n.addCommand('Shuffle', "nuke.createNode('Shuffle')", "z")
+n.addCommand('Crop', "nuke.createNode('Crop')", "[")
+n.addCommand('CornerPin2D', "nuke.createNode('CornerPin2D')", "]")
+n.addCommand('TimeWarp', "nuke.createNode('TimeWarp')", "?")
+n.addCommand('TimeOffset', "nuke.createNode('TimeOffset')", "/")
+n.addCommand('ChannelMerge', "nuke.createNode('ChannelMerge')", "n")
+n.addCommand('Invert', "nuke.createNode('Invert')", "v")
+n.addCommand('Multiply', "nuke.createNode('Multiply')", "*")
+n.addCommand('Reformat', "nuke.createNode('Reformat')", "e")
+##
+# Add to existing toolbar
+toolbar = nuke.toolbar("Nodes")
+toolbar.addCommand( "Merge/Merges/Stencil", "nuke.createNode('Merge2','operation stencil')")
+toolbar.addCommand( "Merge/Merges/Mask", "nuke.createNode('Merge2','operation mask')")
+toolbar.addCommand( "Merge/Merges/From", "nuke.createNode('Merge2','operation from')")
+toolbar.addCommand( "Merge/Merges/Divide", "nuke.createNode('Merge2','operation divide')")
+toolbar.addCommand( "Merge/Merges/Under", "nuke.createNode('Merge2','operation under')")
+toolbar.addCommand( "Merge/Merges/Difference", "nuke.createNode('Merge2','operation difference')")
+#Knob Defaults
+nuke.knobDefault('Tracker4.label','[value reference_frame]')
+nuke.knobDefault('In.operation','mask')
+nuke.knobDefault('Out.operation','stencil')
+nuke.knobDefault('Viewer.hide_input','True')
+nuke.knobDefault('PostageStamp.hide_input','True')
+nuke.knobDefault('PostageStamp.tile_color',"1073762303")
+nuke.knobDefault("RotoPaint.toolbox", '''clone { 
+{ brush opc .1}
+{ clone opc .1}
+{ reveal opc .1}
+}''')
+##
+​

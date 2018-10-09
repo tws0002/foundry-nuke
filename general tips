@@ -10,4 +10,17 @@ multiply: Adjust the amount of motionblur
 offset: Adjust the shutter offset
 method: forward
 alpha:Choose rgba alpha 
+
+Reproduce and send to Foundry
+Found an error in the script that introduced the artifacts.
+There is a bug in the Merge nodes Over operation
+probably liked to the internal order of operation.
+If you'll mix the over node to limit the opacity of
+the A pipe RGB values in the result are changed
+even thou it's outside the bbox and evidently have
+zero values in all channels.
+The problem only occurs when the mix slider goes
+below 0.48 on the 0-1 scale.
 ​
+
+

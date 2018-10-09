@@ -1,0 +1,39 @@
+This Blink script will produce a hex grid. Hack at your pleasure. 
+
+kernel HexKernel : ImageComputationKernel<ePixelWise>
+{
+  Image<eWrite> dst;
+   param:
+    float size;
+    float smoothness;
+
+  void define() {
+    defineParam(size, "size", 10.0f);
+    defineParam(smoothness, "smoothness", 1.0f);
+  }
+
+  float2 mod(float2 v, float m) {
+    return float2( fmod(v.x, m), fmod(v.y, m) );
+  } 
+  float hexGrid(float2 p) {
+    p.x *= 2.0f*0.57735f;
+    p.y += fmod(floor(p.x), 2.0f)*0.5f;
+    p = fabs(mod(p, 1.0f) - 0.5f);
+    return fabs(max(p.x*1.5f+p.y, p.y*2.0f)-1.0f);
+  }
+
+  void process(int2 xy) {
+    float2 pos = float2(xy)/size;
+    float v = hexGrid(pos);
+    // The following is v = smoothstep(0.0f, smoothness, v);
+    // Defining smoothstep as a function produces strange results
+    if (v < 0.0f)
+      v = 0.0f;
+    else if (v >= smoothness)
+      v = 1.0f;
+    else
+      v = v / smoothness;
+    v = v*v * (3.0f - 2.0f*v);
+    dst() = float4(v, v, v, 1.0f);
+  }
+};
